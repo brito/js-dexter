@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<?job error="true" debug="true" ?>
+
+<job id="main">    
+    <comment>
+    </comment>
+    <script src="dexter.js"></script>
+    <script src="lang.js"></script>
+    <script><![CDATA[
+/*
+* Command line handler
+* 
+* flags:
+* - p: include private members (true|false)
+* - d: enable debug messages (true|false)
+* - o: output path for the documentation. If not specified, echoed to console.
+* 
+* @example Dexter [flags] path[#object]
+*/
+var config = (function mapConfigArgs() {
+  var config = {};
+  var flagAlias = {p:'includePrivateDocs', d:'isDebugEnabled'};
+  var switchAlias = {o:'outputPath'};
+  var numArgs = WScript.Arguments.length;
+  for (var i=0;i<numArgs;++i) {
+    var arg = WScript.Arguments(i);
+      if (arg.charAt(0) == '-') {
+        var numFlags = arg.length, j;
+        config.flags = config.flags || {};
+        for (j=1;j<numFlags;++j) {
+          var ch = arg.charAt(j);
+          if ((alias = flagAlias[ch])) { config.flags[alias] = true; }
+          else if ((alias = switchAlias[ch])) { 
+            config.flags[alias] = WScript.Arguments(++i); 
+            break;
+          }
+        }
+      } else { config.path = arg; }      
+  } 
+  return config;
+})();
+WScript.Echo('Extracting ' + config.path);
+var src = new $Dexter(config).extract(['toc', 'summary', 'full']);
+WScript.Echo(src);
+WScript.Quit(0);
+   ]]></script>
+</job>
